@@ -17,6 +17,7 @@ app.conf.update(
 )
 
 app.conf.beat_schedule = {
+    # Daily — Analytics Agent
     "collect-positions-daily": {
         "task": "src.workers.tasks.collect_positions",
         "schedule": crontab(hour=6, minute=0),
@@ -25,14 +26,25 @@ app.conf.beat_schedule = {
         "task": "src.workers.tasks.collect_traffic",
         "schedule": crontab(hour=8, minute=0),
     },
+    "analyze-behavioral-weekly": {
+        "task": "src.workers.tasks.analyze_behavioral",
+        "schedule": crontab(hour=10, minute=0, day_of_week="1,4"),
+    },
+    "collect-geo-metrics-weekly": {
+        "task": "src.workers.tasks.collect_geo_metrics",
+        "schedule": crontab(hour=15, minute=0, day_of_week=3),
+    },
+    # Weekly — SEO Audit Agent
     "full-audit-weekly": {
         "task": "src.workers.tasks.run_full_audit",
         "schedule": crontab(hour=3, minute=0, day_of_week=1),
     },
+    # Weekly — Orchestrator
     "orchestrator-plan-weekly": {
         "task": "src.workers.tasks.orchestrator_plan",
         "schedule": crontab(hour=9, minute=0, day_of_week=1),
     },
+    # Weekly — Report
     "weekly-report": {
         "task": "src.workers.tasks.generate_weekly_report",
         "schedule": crontab(hour=17, minute=0, day_of_week=5),
