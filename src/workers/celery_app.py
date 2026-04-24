@@ -39,6 +39,23 @@ app.conf.beat_schedule = {
         "task": "src.workers.tasks.run_full_audit",
         "schedule": crontab(hour=3, minute=0, day_of_week=1),
     },
+    "keyword-research-weekly": {
+        "task": "src.workers.tasks.run_keyword_research",
+        "schedule": crontab(hour=10, minute=0, day_of_week=3),
+    },
+    "competitor-analysis-weekly": {
+        "task": "src.workers.tasks.run_competitor_analysis",
+        "schedule": crontab(hour=10, minute=0, day_of_week=2),
+    },
+    # Weekly — Technical SEO Agent
+    "update-sitemap-weekly": {
+        "task": "src.workers.tasks.update_sitemap",
+        "schedule": crontab(hour=5, minute=0, day_of_week=1),
+    },
+    "check-cwv-weekly": {
+        "task": "src.workers.tasks.check_cwv",
+        "schedule": crontab(hour=4, minute=0, day_of_week=6),
+    },
     # Weekly — Orchestrator
     "orchestrator-plan-weekly": {
         "task": "src.workers.tasks.orchestrator_plan",
