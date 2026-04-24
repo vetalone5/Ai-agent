@@ -75,6 +75,16 @@ app.conf.beat_schedule = {
         "task": "src.workers.tasks.orchestrator_dispatch",
         "schedule": crontab(hour=9, minute=30),
     },
+    # Weekly — Content health
+    "content-health-weekly": {
+        "task": "src.workers.tasks.scan_content_health",
+        "schedule": crontab(hour=11, minute=0, day_of_week=2),
+    },
+    # Monthly — AI probing
+    "probe-ai-responses-monthly": {
+        "task": "src.workers.tasks.probe_ai_responses",
+        "schedule": crontab(hour=14, minute=0, day_of_week=1, day_of_month="1,15"),
+    },
     # Weekly — Report
     "weekly-report": {
         "task": "src.workers.tasks.generate_weekly_report",

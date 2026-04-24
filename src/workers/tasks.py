@@ -197,3 +197,31 @@ def orchestrator_dispatch():
     result = _run_async(orch.dispatch_pending_tasks())
     logger.info("Dispatched: %s", result)
     return result
+
+
+# --- Content auto-updater ---
+
+@app.task(name="src.workers.tasks.scan_content_health")
+def scan_content_health():
+    logger.info("Scanning content health for position/traffic drops...")
+    from src.agents.content_engine.auto_updater import ContentAutoUpdater
+    from src.core.claude_client import ClaudeClient
+    claude, task_mgr, session = _get_deps()
+    updater = ContentAutoUpdater(session, task_mgr, ClaudeClient())
+    result = _run_async(updater.scan_and_update())
+    logger.info("Content health scan: %s", result)
+    return result
+
+
+# --- AI probing ---
+
+@app.task(name="src.workers.tasks.probe_ai_responses")
+def probe_ai_responses():
+    logger.info("Probing AI search responses...")
+    from src.tools.browser_automation import AIProber
+    prober = AIProber()
+    queries = ["аналитика упоминаний бренда в нейросетях", "geo оптимизация", "видимость бренда в ai"]
+    result = _run_async(prober.probe_batch(queries))
+    cited = sum(1 for r in result if r.get("brand_cited"))
+    logger.info("AI probe: %d/%d cited our brand", cited, len(result))
+    return {"total": len(result), "cited": cited}
