@@ -119,6 +119,17 @@ async def health():
     return {"status": "ok", "phase": "production", "version": "1.0.0", "agents_active": 7}
 
 
+@app.get("/api/costs")
+async def costs():
+    """Get LLM cost tracking report."""
+    from src.core.claude_client import ClaudeClient
+    client = ClaudeClient()
+    report = client.costs.get_report()
+    if client.cache:
+        report["cache"] = {"hits": client.cache.hits, "misses": client.cache.misses}
+    return report
+
+
 @app.get("/api/kpi", response_model=KPISummary)
 async def kpi_summary(db: AsyncSession = Depends(get_db)):
     now = datetime.now(timezone.utc)

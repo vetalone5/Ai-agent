@@ -16,10 +16,18 @@ class Settings(BaseSettings):
     openrouter_api_key: str = ""
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
     llm_provider: str = "auto"  # "anthropic", "openrouter", or "auto" (picks whichever key is set)
+    # Models — can be ANY OpenRouter model, not only Claude:
+    # Cheap alternatives: deepseek/deepseek-chat-v3-0324, moonshotai/kimi-k2
+    # See https://openrouter.ai/models for full list
     claude_model: str = "claude-sonnet-4-20250514"
+    claude_model_cheap: str = "claude-haiku-4-5-20251001"
     claude_max_tokens_per_day: int = 500_000
     claude_max_retries: int = 3
     claude_retry_delay: float = 2.0
+
+    # Cost control
+    cost_monthly_budget_usd: float = 10.0
+    enable_prompt_cache: bool = True
 
     # Google Search Console
     gsc_service_account_json: str = ""

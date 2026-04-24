@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from src.config.constants import AgentType, TaskStatus
+from src.config.cost_config import ModelTier, get_task_config
 
 logger = logging.getLogger(__name__)
 
@@ -54,11 +55,37 @@ class BaseAgent(ABC):
                 await self.tasks.update_status(task_id, TaskStatus.ERROR, error=str(e))
             raise
 
-    async def ask_claude(self, system_prompt: str, user_prompt: str, max_tokens: int = 4096) -> str:
+    async def ask_claude(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        max_tokens: int = 4096,
+        task_type: str = "",
+    ) -> str:
+        """Call LLM with automatic model tier selection based on task type."""
+        config = get_task_config(task_type) if task_type else {}
+        tier = config.get("tier", ModelTier.STANDARD)
+        budget = config.get("max_tokens", max_tokens)
+
+        if tier is None:
+            self.logger.debug("Task %s doesn't need LLM, skipping", task_type)
+            return ""
+
         return await self.claude.complete(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
+            max_tokens=min(budget, max_tokens),
+            tier=tier,
+            agent=self.agent_type,
+        )
+
+    async def ask_cheap(self, system_prompt: str, user_prompt: str, max_tokens: int = 500) -> str:
+        """Shortcut for cheap model — use for short tasks."""
+        return await self.claude.complete_cheap(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
             max_tokens=max_tokens,
+            agent=self.agent_type,
         )
 
     @staticmethod
