@@ -11,8 +11,11 @@ class Settings(BaseSettings):
     # Redis
     redis_url: str = "redis://localhost:6379/0"
 
-    # Claude API
+    # LLM API (supports Anthropic direct or OpenRouter)
     anthropic_api_key: str = ""
+    openrouter_api_key: str = ""
+    openrouter_base_url: str = "https://openrouter.ai/api/v1"
+    llm_provider: str = "auto"  # "anthropic", "openrouter", or "auto" (picks whichever key is set)
     claude_model: str = "claude-sonnet-4-20250514"
     claude_max_tokens_per_day: int = 500_000
     claude_max_retries: int = 3
