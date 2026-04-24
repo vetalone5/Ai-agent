@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import DateTime, Float, Index, Integer, String
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import JSON
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.models.base import Base, TimestampMixin
@@ -28,9 +28,9 @@ class DailyKPI(Base, TimestampMixin):
     indexed_pages_google: Mapped[int] = mapped_column(Integer, default=0)
 
     ai_citations_count: Mapped[int] = mapped_column(Integer, default=0)
-    ai_citations_details: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    ai_citations_details: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
-    traffic_sources: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    traffic_sources: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     __table_args__ = (
         Index("ix_daily_kpi_date", "date"),
@@ -50,5 +50,5 @@ class WeeklyReport(Base, TimestampMixin):
     articles_published: Mapped[int] = mapped_column(Integer, default=0)
     backlinks_acquired: Mapped[int] = mapped_column(Integer, default=0)
 
-    kpi_snapshot: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
-    recommendations: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    kpi_snapshot: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    recommendations: Mapped[dict | None] = mapped_column(JSON, nullable=True)

@@ -1,5 +1,5 @@
 from sqlalchemy import Float, Index, Integer, String, Text
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import JSON
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.models.base import Base, TimestampMixin
@@ -19,7 +19,7 @@ class PageAudit(Base, TimestampMixin):
     has_canonical: Mapped[bool | None] = mapped_column(nullable=True)
     has_schema: Mapped[bool | None] = mapped_column(nullable=True)
     internal_links_count: Mapped[int] = mapped_column(Integer, default=0)
-    issues: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    issues: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     __table_args__ = (
         Index("ix_page_audits_url", "url"),

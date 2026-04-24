@@ -1,7 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, Index, Integer, String, Text
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlalchemy import JSON, DateTime, Float, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.models.base import Base, TimestampMixin
@@ -24,16 +23,16 @@ class Article(Base, TimestampMixin):
     content_type: Mapped[str] = mapped_column(String(50), nullable=False)
     cluster_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     marker_keyword: Mapped[str] = mapped_column(String(500), nullable=False)
-    lsi_keywords: Mapped[list | None] = mapped_column(ARRAY(String), nullable=True)
+    lsi_keywords: Mapped[list | None] = mapped_column(JSON, nullable=True)
     geo_score: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     platform: Mapped[str] = mapped_column(String(50), nullable=False, default="blog")
     status: Mapped[str] = mapped_column(String(30), nullable=False, default="draft")
     priority: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
 
-    schema_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
-    utm_links: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
-    internal_links: Mapped[list | None] = mapped_column(ARRAY(String), nullable=True)
+    schema_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    utm_links: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    internal_links: Mapped[list | None] = mapped_column(JSON, nullable=True)
 
     published_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

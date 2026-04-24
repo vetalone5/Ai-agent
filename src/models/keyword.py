@@ -1,5 +1,4 @@
-from sqlalchemy import Float, Index, Integer, String, Text
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlalchemy import JSON, Float, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.models.base import Base, TimestampMixin
@@ -33,7 +32,7 @@ class KeywordCluster(Base, TimestampMixin):
     geo_score: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     content_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
     article_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    lsi_keywords: Mapped[list | None] = mapped_column(ARRAY(String), nullable=True)
+    lsi_keywords: Mapped[list | None] = mapped_column(JSON, nullable=True)
 
     __table_args__ = (
         Index("ix_clusters_geo_score", "geo_score"),
