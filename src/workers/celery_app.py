@@ -56,10 +56,24 @@ app.conf.beat_schedule = {
         "task": "src.workers.tasks.check_cwv",
         "schedule": crontab(hour=4, minute=0, day_of_week=6),
     },
+    # Weekly — Link Building Agent
+    "check-backlinks-weekly": {
+        "task": "src.workers.tasks.check_backlinks",
+        "schedule": crontab(hour=10, minute=0, day_of_week=5),
+    },
+    # Weekly — AI Visibility Agent
+    "check-ai-visibility-weekly": {
+        "task": "src.workers.tasks.check_ai_visibility",
+        "schedule": crontab(hour=15, minute=0, day_of_week="3,6"),
+    },
     # Weekly — Orchestrator
     "orchestrator-plan-weekly": {
         "task": "src.workers.tasks.orchestrator_plan",
         "schedule": crontab(hour=9, minute=0, day_of_week=1),
+    },
+    "orchestrator-dispatch-daily": {
+        "task": "src.workers.tasks.orchestrator_dispatch",
+        "schedule": crontab(hour=9, minute=30),
     },
     # Weekly — Report
     "weekly-report": {

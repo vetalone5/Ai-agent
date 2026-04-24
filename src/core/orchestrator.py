@@ -174,10 +174,59 @@ class Orchestrator(BaseAgent):
         return created
 
     async def _on_task_completed(self, **data: Any) -> None:
-        logger.info("Orchestrator: task completed: %s", data.get("task_id"))
+        task_id = data.get("task_id")
+        task = data.get("task")
+        logger.info("Orchestrator: task %s completed (type: %s)", task_id, task.get("task_type") if task else "?")
 
     async def _on_task_failed(self, **data: Any) -> None:
-        logger.warning("Orchestrator: task failed: %s", data.get("task_id"))
+        task_id = data.get("task_id")
+        logger.warning("Orchestrator: task %s failed", task_id)
 
     async def _on_task_approved(self, **data: Any) -> None:
-        logger.info("Orchestrator: task approved: %s", data.get("task_id"))
+        """Post-approval processing: publish article, cross-post to Dzen, trigger indexing."""
+        task_id = data.get("task_id")
+        task = data.get("task", {})
+        task_type = task.get("task_type", "")
+        result = task.get("result", {})
+
+        logger.info("Orchestrator: task %s approved, running post-processing", task_id)
+
+        if task_type in ("run_pipeline", "write_article", "run_batch"):
+            article_id = result.get("article_id")
+            if article_id:
+                await self._post_approve_article(article_id)
+
+    async def _post_approve_article(self, article_id: int) -> None:
+        """After article approval: publish → IndexNow → Dzen cross-post."""
+        from src.tools.content_publisher import ContentPublisher
+        from src.tools.dzen_publisher import DzenPublisher
+
+        publisher = ContentPublisher(self._session_factory)
+        pub_result = await publisher.publish(article_id)
+        logger.info("Auto-published article %d: %s", article_id, pub_result.get("published_url"))
+
+        published_url = pub_result.get("published_url", "")
+        if published_url:
+            from sqlalchemy import select
+            from src.models.article import Article
+
+            async with self._session_factory() as session:
+                result = await session.execute(select(Article).where(Article.id == article_id))
+                article = result.scalar_one_or_none()
+
+            if article:
+                dzen = DzenPublisher()
+                dzen_result = await dzen.publish({
+                    "title": article.title,
+                    "content_md": article.content_md,
+                    "published_url": published_url,
+                })
+                logger.info("Dzen cross-post for article %d: %s", article_id, dzen_result.get("status"))
+
+                await self.tasks.create_task(
+                    task_type="collect_positions",
+                    agent_type=AgentType.ANALYTICS,
+                    priority=TaskPriority.MEDIUM,
+                    data={"trigger": f"article_{article_id}_published", "url": published_url},
+                    created_by=AgentType.ORCHESTRATOR,
+                )

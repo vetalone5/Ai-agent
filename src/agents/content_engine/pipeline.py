@@ -43,12 +43,16 @@ class ContentPipeline:
         logger.info("Pipeline start: cluster=%d keyword='%s' type=%s geo=%d",
                      cluster_id, keyword, content_type, geo_score)
 
+        # Phase 9: SERP pre-analysis
+        serp_data = await self._analyze_serp(keyword)
+
         # Phase 10: Write article
         article_data = await self._writer.write_article(
             keyword=keyword,
             content_type=content_type,
             lsi_keywords=lsi,
             geo_score=geo_score,
+            serp_data=serp_data,
         )
 
         # Phase 11: Factcheck
@@ -66,6 +70,9 @@ class ContentPipeline:
             article_text=article_data["content_md"],
         )
 
+        from src.tools.utm_constructor import build_article_utm_links
+        utm_links = build_article_utm_links(meta["slug"], keyword)
+
         article_record = {
             "title": keyword.title(),
             "slug": meta["slug"],
@@ -81,6 +88,7 @@ class ContentPipeline:
             "geo_score": geo_score,
             "platform": Platform.BLOG,
             "status": "draft",
+            "utm_links": utm_links,
         }
 
         seo_issues = check_seo_quality(article_record)
@@ -132,6 +140,18 @@ class ContentPipeline:
                 "lsi_keywords": cluster.lsi_keywords or [],
             }
 
+    async def _analyze_serp(self, keyword: str) -> dict[str, Any] | None:
+        """Phase 9: Analyze SERP before writing to understand competition."""
+        try:
+            from src.agents.seo_audit.serp_analyzer import SerpAnalyzer
+            analyzer = SerpAnalyzer(None)
+            result = await analyzer.analyze_serp(keyword)
+            logger.info("SERP pre-analysis for '%s': competition=%s", keyword, result.get("competitiveness"))
+            return result
+        except Exception as e:
+            logger.warning("SERP pre-analysis failed for '%s': %s", keyword, e)
+            return None
+
     async def _save_article(self, data: dict[str, Any]) -> int:
         async with self._session_factory() as session:
             article = Article(
@@ -149,6 +169,7 @@ class ContentPipeline:
                 geo_score=data["geo_score"],
                 platform=data["platform"],
                 status=data["status"],
+                utm_links=data.get("utm_links"),
             )
             session.add(article)
             await session.commit()

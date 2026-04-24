@@ -138,9 +138,62 @@ def check_cwv():
     return {"urls_checked": len(result)}
 
 
-# --- Orchestrator (Phase 2) ---
+# --- Link Building Agent tasks ---
+
+def _get_link_building_agent():
+    from src.agents.link_building.agent import LinkBuildingAgent
+    claude, task_mgr, session = _get_deps()
+    return LinkBuildingAgent(claude, task_mgr, session)
+
+
+@app.task(name="src.workers.tasks.check_backlinks")
+def check_backlinks():
+    logger.info("Checking backlink health...")
+    agent = _get_link_building_agent()
+    result = _run_async(agent.backlinks.check_all_backlinks())
+    logger.info("Backlink check: %s", result)
+    return result
+
+
+# --- AI Visibility Agent tasks ---
+
+def _get_ai_visibility_agent():
+    from src.agents.ai_visibility.agent import AIVisibilityAgent
+    claude, task_mgr, session = _get_deps()
+    return AIVisibilityAgent(claude, task_mgr, session)
+
+
+@app.task(name="src.workers.tasks.check_ai_visibility")
+def check_ai_visibility():
+    logger.info("Checking AI visibility...")
+    agent = _get_ai_visibility_agent()
+    result = _run_async(agent.tracker.get_full_visibility_report())
+    logger.info("AI visibility: %s", result)
+    return result
+
+
+# --- Orchestrator ---
+
+def _get_orchestrator():
+    from src.core.orchestrator import Orchestrator
+    from src.core.event_bus import EventBus
+    claude, task_mgr, session = _get_deps()
+    return Orchestrator(claude, task_mgr, session, EventBus())
+
 
 @app.task(name="src.workers.tasks.orchestrator_plan")
 def orchestrator_plan():
     logger.info("Running orchestrator weekly planning...")
-    # Full implementation in Phase 2
+    orch = _get_orchestrator()
+    result = _run_async(orch.create_weekly_plan())
+    logger.info("Plan created: %d tasks", result.get("tasks_created", 0))
+    return result
+
+
+@app.task(name="src.workers.tasks.orchestrator_dispatch")
+def orchestrator_dispatch():
+    logger.info("Dispatching pending tasks...")
+    orch = _get_orchestrator()
+    result = _run_async(orch.dispatch_pending_tasks())
+    logger.info("Dispatched: %s", result)
+    return result

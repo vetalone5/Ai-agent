@@ -54,7 +54,7 @@ th{font-weight:600;color:#555}
 </head>
 <body>
 <h1>SEO Agents Dashboard</h1>
-<p class="sub">spioniro.ru v0.3</p>
+<p class="sub">spioniro.ru v1.0 — все 7 агентов активны</p>
 <div class="card full">
 <h2>KPI</h2>
 <div class="kpi-g">
@@ -65,13 +65,13 @@ th{font-weight:600;color:#555}
 </div></div>
 <div class="grid">
 <div class="card"><h2>Агенты</h2><table>
-<tr><td>Orchestrator</td><td><span class="badge gr">Phase 2</span></td></tr>
+<tr><td>Orchestrator</td><td><span class="badge g">Active</span></td></tr>
 <tr><td>SEO Audit</td><td><span class="badge g">Active</span></td></tr>
 <tr><td>Content Engine</td><td><span class="badge g">Active</span></td></tr>
 <tr><td>Technical SEO</td><td><span class="badge g">Active</span></td></tr>
 <tr><td>Analytics</td><td><span class="badge g">Active</span></td></tr>
-<tr><td>Link Building</td><td><span class="badge gr">Phase 3</span></td></tr>
-<tr><td>AI Visibility</td><td><span class="badge gr">Phase 3</span></td></tr>
+<tr><td>Link Building</td><td><span class="badge g">Active</span></td></tr>
+<tr><td>AI Visibility</td><td><span class="badge g">Active</span></td></tr>
 </table></div>
 <div class="card"><h2>API</h2><div class="api">
 <a href="/api/health">/api/health</a><a href="/api/kpi">/api/kpi</a>
@@ -116,7 +116,7 @@ fetch(`/api/approvals/${id}/${action}`,{method:'POST',headers:{'Content-Type':'a
 
 @app.get("/api/health")
 async def health():
-    return {"status": "ok", "phase": "mvp", "version": "0.3.0"}
+    return {"status": "ok", "phase": "production", "version": "1.0.0", "agents_active": 7}
 
 
 @app.get("/api/kpi", response_model=KPISummary)
